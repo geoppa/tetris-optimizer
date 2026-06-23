@@ -1,12 +1,14 @@
 package fileutils
 
 import (
+	"errors"
 	"fmt"
 	"os"
 )
 
-// creates a sample.txt with the tetrominoes
-func CreateSampleFile() error {
+// CreateSampleFile creates sample.txt with tetrominoes if it does not exist.
+// Returns true if the file was newly created, false if it already existed.
+func CreateSampleFile() (bool, error) {
 	content := `...#
 ...#
 ...#
@@ -48,16 +50,22 @@ func CreateSampleFile() error {
 ....
 `
 
-	file, err := os.Create("sample.txt")
+	// Open the file only if it DOES NOT exist (os.O_EXCL)
+	file, err := os.OpenFile("sample.txt", os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0666)
 	if err != nil {
-		return fmt.Errorf("Fail to create file: %w", err)
+		// If the file already exists, return false with no error
+		if errors.Is(err, os.ErrExist) {
+			return false, nil
+		}
+		return false, fmt.Errorf("fail to create file: %w", err)
 	}
 	defer file.Close()
 
+	// Write the tetromino content to the file
 	_, err = file.WriteString(content)
 	if err != nil {
-		return fmt.Errorf("Fail writing to file: %w", err)
+		return false, fmt.Errorf("fail writing to file: %w", err)
 	}
 
-	return nil
+	return true, nil
 }

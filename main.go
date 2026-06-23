@@ -19,26 +19,31 @@ func main() {
 
 	// Call the external function to create sample.txt if requested.
 	if fileName == "sample.txt" {
-		err := fileutils.CreateSampleFile()
+		created, err := fileutils.CreateSampleFile()
 		if err != nil {
-			fmt.Println("ERROR")
+			fmt.Printf("ERROR: %v\n", err)
 			return
 		}
-		// Added: Print confirmation message for file creation
-		fmt.Println("The file sample.txt with the tetrominoes was successfully created.")
+
+		// Print the appropriate message based on whether the file was created or already existed
+		if created {
+			fmt.Println("The file sample.txt with the tetrominoes was successfully created.")
+		} else {
+			fmt.Println("The file sample.txt already exists. Skipping creation.")
+		}
 	}
 
 	// Read the raw content of the input file.
 	rawContent, err := os.ReadFile(fileName)
 	if err != nil {
-		fmt.Println("ERROR")
+		fmt.Println("ERROR: File not found")
 		return
 	}
 
 	// Parse and validate the tetrominoes from the file content.
 	rawBlocks, err := parseAndValidate(string(rawContent))
 	if err != nil {
-		fmt.Println("ERROR")
+		fmt.Println("ERROR: Bad file content")
 		return
 	}
 
